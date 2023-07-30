@@ -39,6 +39,7 @@ public class Practice {
 
     // 1- Display all the employees
     public static List<Employee> getAllEmployees() {
+
         return employeeService.readAll();
     }
 
@@ -151,7 +152,7 @@ public class Practice {
                 .findFirst().orElseThrow(() -> new Exception("No department found"))
                 .getLocation().getCountry().getRegion();
         /*
-        orElseThrow() => burada ()-> throw Exception("asd") kullanamayız. cunku throw return etmez.stop eder.
+        orElseThrow() => burada ()-> throw Exception("...") kullanamayız. cunku throw return etmez.stop eder.
          */
 
     }
@@ -237,7 +238,7 @@ public class Practice {
     }
 
     // 20- Display the maximum salary an employee gets
-    public static Long getMaxSalary() throws Exception {
+    public static Long getMaxSalary()  {
         // solution.1:
        /* return employeeService.readAll().stream()
                  .sorted(Comparator.comparing(Employee::getSalary).reversed())
@@ -249,9 +250,9 @@ public class Practice {
                 .limit(1).collect(Collectors.toList()).get(0).getSalary();*/
 
         //solution.3
-      /*  return employeeService.readAll().stream()
-                .max(Comparator.comparing(Employee::getSalary))
-                .get().getSalary();*/
+//        return employeeService.readAll().stream()
+//                .max(Comparator.comparing(Employee::getSalary))
+//                .get().getSalary();
 
         //solution.4
       /*  return employeeService.readAll().stream()
@@ -286,25 +287,44 @@ public class Practice {
     // 21- Display the employee(s) who gets the maximum salary
     public static List<Employee> getMaxSalaryEmployee() {
 
-        return new ArrayList<>();
+        return employeeService.readAll().stream() //throw except olduğundan maxSalray kullanamdık ya burada n sil y ada buraya try ctch ekle
+                .filter(employee -> employee.getSalary().equals(getMaxSalary()))
+                .collect(Collectors.toList());
     }
 
     // 22- Display the max salary employee's job
-    public static Job getMaxSalaryEmployeeJob() throws Exception {
-        //TODO Implement the method
-        return new Job();
+    public static Job getMaxSalaryEmployeeJob() {
+        return getMaxSalaryEmployee().get(0).getJob();
     }
 
     // 23- Display the max salary in Americas Region
     public static Long getMaxSalaryInAmericasRegion() throws Exception {
-        //TODO Implement the method
-        return 1L;
+
+        return employeeService.readAll().stream()
+                .filter(employee -> employee.getDepartment()
+                        .getLocation().getCountry().getRegion()
+                        .getRegionName().equals("Americas"))
+                .max(Comparator.comparing(Employee::getSalary))
+                .get().getSalary();
+
     }
 
     // 24-  Display the second maximum salary an employee gets
-    public static Long getSecondMaxSalary() throws Exception {
-        //TODO Implement the method
-        return 1L;
+    public static Long getSecondMaxSalary() {
+
+        //solution.1-my
+        return employeeService.readAll().stream()
+                .sorted(Comparator.comparing(Employee::getSalary).reversed())
+                .map(Employee::getSalary)
+                .distinct()
+                .skip(1) //direk skıp  kullanamadık kaç tane max var bilmiyoruz
+                .findFirst().get();
+        //solution.2
+//        return employeeService.readAll().stream()
+//                .filter(employee -> employee.getSalary().compareTo(getMaxSalary()) <0)
+//                .sorted(Comparator.comparing(Employee::getSalary).reversed())
+//                .findFirst().get().getSalary();
+
     }
 
     // 25- Display the employee(s) who gets the second maximum salary
@@ -315,8 +335,48 @@ public class Practice {
 
     // 26- Display the minimum salary an employee gets
     public static Long getMinSalary() throws Exception {
-        //TODO Implement the method
-        return 1L;
+        //solution.1
+//        return employeeService.readAll().stream()
+//                .sorted(Comparator.comparing(Employee::getSalary))
+//                .findFirst().get().getSalary();
+
+        //solution.2
+//        return employeeService.readAll().stream()
+//                .sorted(Comparator.comparing(Employee::getSalary))
+//                .limit(1).collect(Collectors.toList()).get(0).getSalary();
+
+        //solution.3
+//        return employeeService.readAll().stream()
+//                .map(Employee::getSalary)
+//                .reduce((salary1,salary2)-> salary1<salary2 ? salary1 : salary2)
+//                .get();
+
+        //solution.4
+//        return employeeService.readAll().stream()
+//                .min(Comparator.comparing(Employee::getSalary))
+//                .get().getSalary();
+
+        //solution.5
+//        return employeeService.readAll().stream()
+//                .map(Employee::getSalary)
+//                .reduce(Long::min)
+//                .get();
+
+        //solution.6
+//        return employeeService.readAll().stream()
+//                .map(Employee::getSalary)
+//                .collect(Collectors.minBy(Comparator.comparing(Long::longValue)))
+//                .get();
+
+        //solution.7
+//        return employeeService.readAll().stream()
+//                .collect(Collectors.minBy(Comparator.comparing(Employee::getSalary)))
+//                .get().getSalary();
+
+        //solution.8
+        return employeeService.readAll().stream()
+                .mapToLong(Employee::getSalary)
+                .max().getAsLong();
     }
 
     // 27- Display the employee(s) who gets the minimum salary
@@ -327,9 +387,11 @@ public class Practice {
 
     // 28- Display the second minimum salary an employee gets
     public static Long getSecondMinSalary() throws Exception {
-        //TODO Implement the method
-        return 1L;
+        return employeeService.readAll().stream()
+                .sorted(Comparator.comparing(Employee::getSalary))
+                .skip(1).collect(Collectors.toList()).get(0).getSalary();
     }
+
 
     // 29- Display the employee(s) who gets the second minimum salary
     public static List<Employee> getSecondMinSalaryEmployee() {
@@ -339,32 +401,46 @@ public class Practice {
 
     // 30- Display the average salary of the employees
     public static Double getAverageSalary() {
-        //TODO Implement the method
-        return 1d;
+
+        return employeeService.readAll().stream()
+                .collect(Collectors.averagingDouble(Employee::getSalary));
+
     }
 
     // 31- Display all the employees who are making more than average salary
     public static List<Employee> getAllEmployeesAboveAverage() {
-        //TODO Implement the method
-        return new ArrayList<>();
+        return employeeService.readAll().stream()
+                .filter(employee -> employee.getSalary()>getAverageSalary())
+                .collect(Collectors.toList());
     }
 
     // 32- Display all the employees who are making less than average salary
     public static List<Employee> getAllEmployeesBelowAverage() {
-        //TODO Implement the method
-        return new ArrayList<>();
+        return employeeService.readAll().stream()
+                .filter(employee -> employee.getSalary()< getAverageSalary())
+                .collect(Collectors.toList());
+
     }
 
     // 33- Display all the employees separated based on their department id number
     public static Map<Long, List<Employee>> getAllEmployeesForEachDepartment() {
-        //TODO Implement the method
+           //TODO Implement the method
         return new HashMap<>();
     }
 
     // 34- Display the total number of the departments
     public static Long getTotalDepartmentsNumber() {
-        //TODO Implement the method
-        return 1L;
+        //solution.1
+//        return departmentService.readAll().stream()
+//                .sorted(Comparator.comparing(Department::getDepartmentName))
+//                .count();
+        //I solved it, it didn't give an error. Is it possible ??  ------> ask it?
+
+        //solution.2
+        return departmentService.readAll().stream()
+                .collect(Collectors.counting());
+
+
     }
 
     // 35- Display the employee whose first name is 'Alyssa' and manager's first name is 'Eleni' and department name is 'Sales'
@@ -375,20 +451,26 @@ public class Practice {
 
     // 36- Display all the job histories in ascending order by start date
     public static List<JobHistory> getAllJobHistoriesInAscendingOrder() {
-        //TODO Implement the method
-        return new ArrayList<>();
+
+        return jobHistoryService.readAll().stream()
+                .sorted(Comparator.comparing(JobHistory::getStartDate))
+                .collect(Collectors.toList());
+
     }
 
     // 37- Display all the job histories in descending order by start date
     public static List<JobHistory> getAllJobHistoriesInDescendingOrder() {
-        //TODO Implement the method
-        return new ArrayList<>();
+          return jobHistoryService.readAll().stream()
+                  .sorted(Comparator.comparing(JobHistory::getStartDate).reversed())
+                  .collect(Collectors.toList());
     }
 
     // 38- Display all the job histories where the start date is after 01.01.2005
     public static List<JobHistory> getAllJobHistoriesStartDateAfterFirstDayOfJanuary2005() {
+
+
         //TODO Implement the method
-        return new ArrayList<>();
+       return new ArrayList<>();
     }
 
     // 39- Display all the job histories where the end date is 31.12.2007 and the job title of job is 'Programmer'
@@ -436,18 +518,25 @@ public class Practice {
 
     // 46- Display the full names of all the employees
     public static List<String> getAllEmployeesFullNames() {
-        //TODO Implement the method
-        return new ArrayList<>();
+        return employeeService.readAll().stream()
+                .map(employee -> employee.getFirstName()+employee.getLastName())
+                .collect(Collectors.toList());
     }
 
     // 47- Display the length of the longest full name(s)
     public static Integer getLongestNameLength() throws Exception {
-        //TODO Implement the method
-        return 1;
+       return employeeService.readAll().stream()
+               .max(Comparator.comparing(employee -> employee.getFirstName().length() + employee.getLastName().length()))
+               .hashCode();
     }
 
     // 48- Display the employee(s) with the longest full name(s)
     public static List<Employee> getLongestNamedEmployee() {
+        //return employeeService.readAll().stream()
+        //        .max(Comparator.comparing(employee -> employee.getFirstName().length() + employee.getLastName().length()))
+
+
+
         //TODO Implement the method
         return new ArrayList<>();
     }
@@ -464,4 +553,7 @@ public class Practice {
         return new ArrayList<>();
     }
 
+  /*  private static String apply(Long t) {
+        return Employee.getFirstName(t);
+    }*/
 }
